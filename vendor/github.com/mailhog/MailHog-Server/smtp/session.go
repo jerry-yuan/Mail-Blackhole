@@ -131,7 +131,7 @@ func (c *Session) Read() bool {
 	text := string(buf[0:n])
 	logText := strings.Replace(text, "\n", "\\n", -1)
 	logText = strings.Replace(logText, "\r", "\\r", -1)
-	c.logf("Received %d bytes: '%s'\n", n, logText)
+	// c.logf("Received %d bytes: '%s'\n", n, logText)
 
 	c.line += text
 
