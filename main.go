@@ -1,104 +1,73 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	gohttp "net/http"
 
 	"github.com/gorilla/pat"
-	"github.com/ian-kent/go-log/log"
-	"github.com/mailhog/MailHog-Server/api"
-	cfgapi "github.com/mailhog/MailHog-Server/config"
-	"github.com/mailhog/MailHog-Server/smtp"
-	"github.com/mailhog/MailHog-UI/assets"
-	cfgui "github.com/mailhog/MailHog-UI/config"
-	"github.com/mailhog/MailHog-UI/web"
-	cfgcom "github.com/mailhog/MailHog/config"
-	"github.com/mailhog/http"
-	"github.com/mailhog/mhsendmail/cmd"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/jerry-yuan/mail-blackhole/api"
+	"github.com/jerry-yuan/mail-blackhole/config"
+	"github.com/jerry-yuan/mail-blackhole/data"
+	"github.com/jerry-yuan/mail-blackhole/http"
+	"github.com/jerry-yuan/mail-blackhole/smtp"
+	"github.com/jerry-yuan/mail-blackhole/storage"
+	"github.com/jerry-yuan/mail-blackhole/web"
+	"github.com/jerry-yuan/mail-blackhole/web/assets"
+	"github.com/sirupsen/logrus"
 )
 
-var apiconf *cfgapi.Config
-var uiconf *cfgui.Config
-var comconf *cfgcom.Config
-var exitCh chan int
+var conf *config.Config
+
+var messageChan chan *data.Message
+var exitCh chan struct{} = make(chan struct{})
 var version string
 
-func configure() {
-	cfgcom.RegisterFlags()
-	cfgapi.RegisterFlags()
-	cfgui.RegisterFlags()
-	flag.Parse()
-	apiconf = cfgapi.Configure()
-	uiconf = cfgui.Configure()
-	comconf = cfgcom.Configure()
-
-	apiconf.WebPath = comconf.WebPath
-	uiconf.WebPath = comconf.WebPath
-}
-
 func main() {
-	if len(os.Args) > 1 && (os.Args[1] == "-version" || os.Args[1] == "--version") {
-		fmt.Println("MailHog version: " + version)
+
+	// load configurations
+	conf = config.Configure()
+
+	if conf.PrintVersion {
+		fmt.Println("Mail Blackhole version: " + version)
 		os.Exit(0)
 	}
+	logrus.SetLevel(logrus.InfoLevel)
 
-	if len(os.Args) > 1 && os.Args[1] == "sendmail" {
-		args := os.Args
-		os.Args = []string{args[0]}
-		if len(args) > 2 {
-			os.Args = append(os.Args, args[2:]...)
-		}
-		cmd.Go()
-		return
+	// initialize storage
+	msgStorage, err := storage.Create(conf.Storage)
+	if err != nil {
+		logrus.Fatal(err)
 	}
 
-	if len(os.Args) > 1 && os.Args[1] == "bcrypt" {
-		var pw string
-		if len(os.Args) > 2 {
-			pw = os.Args[2]
-		} else {
-			// TODO: read from stdin
-		}
-		b, err := bcrypt.GenerateFromPassword([]byte(pw), 4)
-		if err != nil {
-			log.Fatalf("error bcrypting password: %s", err)
-			os.Exit(1)
-		}
-		fmt.Println(string(b))
-		os.Exit(0)
+	// initialize smtp server
+	go smtp.Listen(&conf.SMTP, msgStorage, messageChan, exitCh)
+
+	// initialize http server
+	if conf.WebUI.AuthFile != "" {
+		http.AuthFile(conf.WebUI.AuthFile)
 	}
 
-	configure()
-
-	if comconf.AuthFile != "" {
-		http.AuthFile(comconf.AuthFile)
-	}
-
-	exitCh = make(chan int)
-	if uiconf.UIBindAddr == apiconf.APIBindAddr {
+	if conf.WebUI.BindAddr == conf.API.BindAddr {
 		cb := func(r gohttp.Handler) {
-			web.CreateWeb(uiconf, r.(*pat.Router), assets.Asset)
-			api.CreateAPI(apiconf, r.(*pat.Router))
+			web.CreateWeb(&conf.WebUI, r.(*pat.Router), assets.Asset)
+			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
 		}
-		go http.Listen(uiconf.UIBindAddr, assets.Asset, exitCh, cb)
+		go http.Listen(conf.API.BindAddr, assets.Asset, exitCh, cb)
 	} else {
 		cb1 := func(r gohttp.Handler) {
-			api.CreateAPI(apiconf, r.(*pat.Router))
+			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
 		}
 		cb2 := func(r gohttp.Handler) {
-			web.CreateWeb(uiconf, r.(*pat.Router), assets.Asset)
+			web.CreateWeb(&conf.WebUI, r.(*pat.Router), assets.Asset)
 		}
-		go http.Listen(apiconf.APIBindAddr, assets.Asset, exitCh, cb1)
-		go http.Listen(uiconf.UIBindAddr, assets.Asset, exitCh, cb2)
+		go http.Listen(conf.API.BindAddr, assets.Asset, exitCh, cb1)
+		go http.Listen(conf.WebUI.BindAddr, assets.Asset, exitCh, cb2)
 	}
-	go smtp.Listen(apiconf, exitCh)
 
 	<-exitCh
-	log.Printf("Received exit signal")
+	logrus.Infof("Received exit signal")
 }
 
 /*
