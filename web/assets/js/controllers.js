@@ -348,8 +348,8 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
 
         h = $scope.getMessageHTML(data)
         for(c in data.$cidMap) {
-	  str = "cid:" + c;
-	  pat = str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+	        str = "cid:" + c;
+	        pat = str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
           h = h.replace(new RegExp(pat, 'g'), data.$cidMap[c])
         }
 	      data.previewHTML = $sce.trustAsHtml(h);
@@ -388,7 +388,11 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
   $scope.tryDecodeContent = function(message) {
     var charset = "UTF-8"
     if(message.Content.Headers["Content-Type"][0]) {
-      // TODO
+      // Try parse charset
+      const match = mimeType.match(/charset=([\w-]+)/i);
+      if (match && match[1]) {
+        charset = match[1]
+      }
     }
 
     var content = message.Content.Body;
