@@ -389,7 +389,7 @@ mailhogApp.controller('MailCtrl', function ($scope, $http, $sce, $timeout) {
     var charset = "UTF-8"
     if(message.Content.Headers["Content-Type"][0]) {
       // Try parse charset
-      const match = mimeType.match(/charset=([\w-]+)/i);
+      const match = message.Content.Headers["Content-Type"][0].match(/charset=([\w-]+)/i);
       if (match && match[1]) {
         charset = match[1]
       }
