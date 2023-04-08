@@ -5,25 +5,26 @@
 FROM golang:1.20-alpine as builder
 
 # Install MailHog:
-RUN apk --no-cache add --virtual build-dependencies \
-    git \
-  && mkdir -p /root/gocode \
-  && export GOPATH=/root/gocode \
-  && go install github.com/mailhog/MailHog@latest
+RUN apk --no-cache add --virtual build-dependencies git
+RUN mkdir -p /root/gocode \
+  && cd /root/gocode \
+  && git clone https://github.com/jerry-yuan/Mail-Blackhole.git \
+  && cd Mail-Blackhole \
+  && go build -o MailBlackhole
 
 FROM alpine:3
 # Add mailhog user/group with uid/gid 1000.
 # This is a workaround for boot2docker issue #581, see
 # https://github.com/boot2docker/boot2docker/issues/581
-RUN adduser -D -u 1000 mailhog
+RUN adduser -D -u 1000 mailblackhole
 
-COPY --from=builder /root/gocode/bin/MailHog /usr/local/bin/
+COPY --from=builder /root/gocode/Mail-Blackhole/MailBlackhole /usr/local/bin/MailBlackhole
 
-USER mailhog
+USER mailblackhole
 
-WORKDIR /home/mailhog
+WORKDIR /home/mailblackhole
 
-ENTRYPOINT ["MailHog"]
+ENTRYPOINT ["MailBlackhole"]
 
 # Expose the SMTP and HTTP ports:
 EXPOSE 1025 8025
