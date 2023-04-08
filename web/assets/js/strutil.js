@@ -718,6 +718,9 @@ function convertUnicodeCodePointsToBytes(unicode_codes, encoding) {
   var convert_function = OUTPUT_CONVERTERS[normalized_encoding];
   if (convert_function) {
     return convert_function(unicode_codes);
+  } else {
+    var str = convertUnicodeCodePointsToString(unicode_codes);
+    return new TextEncoder(encoding).encode(str)
   }
   return [];
 }
@@ -727,6 +730,9 @@ function convertBytesToUnicodeCodePoints(data_bytes, encoding) {
   var convert_function = INPUT_CONVERTERS[normalized_encoding];
   if (convert_function) {
     return convert_function(data_bytes);
+  } else {
+    var str = new TextDecoder(encoding).decode(new Uint8Array(data_bytes))
+    return convertStringToUnicodeCodePoints(str)
   }
   return [];
 }
