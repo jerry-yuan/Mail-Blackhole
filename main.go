@@ -14,7 +14,6 @@ import (
 	"github.com/jerry-yuan/mail-blackhole/smtp"
 	"github.com/jerry-yuan/mail-blackhole/storage"
 	"github.com/jerry-yuan/mail-blackhole/web"
-	"github.com/jerry-yuan/mail-blackhole/web/assets"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +32,16 @@ func main() {
 		fmt.Println("Mail Blackhole version: " + version)
 		os.Exit(0)
 	}
-	logrus.SetLevel(logrus.InfoLevel)
+
+	// initialize log
+
+	level, err := logrus.ParseLevel(conf.Log.Level)
+	if err != nil {
+		logrus.Warnf("Unrecognized log level %s, fallback to use info", conf.Log.Level)
+		level = logrus.InfoLevel
+	}
+	logrus.SetLevel(level)
+	logrus.SetFormatter(&logrus.TextFormatter{})
 
 	// initialize storage
 	msgStorage, err := storage.Create(conf.Storage)
@@ -51,19 +59,19 @@ func main() {
 
 	if conf.WebUI.BindAddr == conf.API.BindAddr {
 		cb := func(r gohttp.Handler) {
-			web.CreateWeb(&conf.WebUI, r.(*pat.Router), assets.Asset)
+			web.CreateWeb(&conf.WebUI, r.(*pat.Router))
 			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
 		}
-		go http.Listen(conf.API.BindAddr, assets.Asset, exitCh, cb)
+		go http.Listen(conf.API.BindAddr, exitCh, cb)
 	} else {
 		cb1 := func(r gohttp.Handler) {
 			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
 		}
 		cb2 := func(r gohttp.Handler) {
-			web.CreateWeb(&conf.WebUI, r.(*pat.Router), assets.Asset)
+			web.CreateWeb(&conf.WebUI, r.(*pat.Router))
 		}
-		go http.Listen(conf.API.BindAddr, assets.Asset, exitCh, cb1)
-		go http.Listen(conf.WebUI.BindAddr, assets.Asset, exitCh, cb2)
+		go http.Listen(conf.API.BindAddr, exitCh, cb1)
+		go http.Listen(conf.WebUI.BindAddr, exitCh, cb2)
 	}
 
 	<-exitCh

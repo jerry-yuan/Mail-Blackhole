@@ -96,7 +96,7 @@ func BasicAuthHandler(h http.Handler) http.Handler {
 }
 
 // Listen binds to httpBindAddr
-func Listen(httpBindAddr string, Asset func(string) ([]byte, error), exitCh chan struct{}, registerCallback func(http.Handler)) {
+func Listen(httpBindAddr string, exitCh chan struct{}, registerCallback func(http.Handler)) {
 	logrus.Infof("[HTTP] Binding to address: %s", httpBindAddr)
 
 	pat := pat.New()

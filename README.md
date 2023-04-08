@@ -3,6 +3,14 @@ MailBlackhole
 
 Forked from [MailHog](https://github.com/mailhog/MailHog), more suitable to run as an anoymous temp mail service.
 
+**What differences are there between MailBlackhole and MailHog?** 
+* Merged multi repo into one
+* deleted unnecessary outputs in servicing scene which could crash process.
+* migrate deprecated interface into new version
+* delete the monkey which lead to negative effect as temp mail service.
+* rename the app and change the logo (but the github link is still pointing to MailHog)
+* replace internal static assets management with `embed`
+
 **The following document is same as MailHog**
 
 * Download and run MailHog

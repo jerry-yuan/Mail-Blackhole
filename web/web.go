@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
+	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
@@ -17,6 +18,7 @@ import (
 var APIHost string
 var WebPath string
 
+//go:embed assets
 var assets embed.FS
 
 type Web struct {
@@ -24,10 +26,16 @@ type Web struct {
 	asset  func(string) ([]byte, error)
 }
 
-func CreateWeb(cfg *config.WebUIConfig, r http.Handler, asset func(string) ([]byte, error)) *Web {
+func CreateWeb(cfg *config.WebUIConfig, r http.Handler) *Web {
 	web := &Web{
 		config: cfg,
-		asset:  asset,
+		asset: func(s string) ([]byte, error) {
+			file, err := assets.Open(s)
+			if err != nil {
+				return nil, err
+			}
+			return io.ReadAll(file)
+		},
 	}
 
 	pat := r.(*pat.Router)

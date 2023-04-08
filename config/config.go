@@ -6,6 +6,10 @@ import (
 	"github.com/ian-kent/envconf"
 )
 
+type LogConfig struct {
+	Level string
+}
+
 type SMTPConfig struct {
 	BindAddr string
 	Hostname string
@@ -37,6 +41,8 @@ type WebUIConfig struct {
 type Config struct {
 	PrintVersion bool
 
+	Log LogConfig
+
 	SMTP    SMTPConfig
 	Storage StorageConfig
 	API     APIConfig
@@ -48,6 +54,9 @@ var globalConfig = DefaultConfig()
 func init() {
 	// Global configuration
 	flag.BoolVar(&globalConfig.PrintVersion, "version", false, "Print version")
+
+	// Logrus configuration
+	flag.StringVar(&globalConfig.Log.Level, "log-level", envconf.FromEnvP("MBH_LOG_LEVEL", "INFO").(string), "Log level(available:panic;fatal;error;warn;info;debug;trace)")
 
 	// SMTP configuration
 	flag.StringVar(&globalConfig.SMTP.BindAddr, "smtp-bind-addr", envconf.FromEnvP("MBH_SMTP_BIND_ADDR", "0.0.0.0:1025").(string), "SMTP bind interface and port, e.g. 0.0.0.0:1025 or just :1025")
