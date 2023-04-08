@@ -19,7 +19,7 @@ import (
 
 var conf *config.Config
 
-var messageChan chan *data.Message
+var messageChan chan *data.Message = make(chan *data.Message, 10)
 var exitCh chan struct{} = make(chan struct{})
 var version string
 
