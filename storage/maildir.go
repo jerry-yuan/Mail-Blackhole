@@ -164,11 +164,27 @@ func (maildir *Maildir) DeleteOne(id string) error {
 
 // DeleteAll deletes all in memory messages
 func (maildir *Maildir) DeleteAll() error {
-	err := os.RemoveAll(maildir.Path)
+	logrus.Infof("Deleting all messages in %s", maildir.Path)
+
+	dir, err := os.Open(maildir.Path)
 	if err != nil {
 		return err
 	}
-	return os.Mkdir(maildir.Path, 0770)
+	defer dir.Close()
+
+	entries, err := dir.ReadDir(0)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		err = os.Remove(filepath.Join(maildir.Path, entry.Name()))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Load returns an individual message by storage ID
