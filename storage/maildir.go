@@ -140,6 +140,10 @@ func (maildir *Maildir) List(start, limit int) (*data.Messages, error) {
 	}
 
 	for _, fileinfo := range n {
+		if start > 0 {
+			start -= 1
+			continue
+		}
 		b, err := os.ReadFile(filepath.Join(maildir.Path, fileinfo.Name()))
 		if err != nil {
 			return nil, err
@@ -150,6 +154,9 @@ func (maildir *Maildir) List(start, limit int) (*data.Messages, error) {
 		m.ID = data.MessageID(fileinfo.Name())
 		m.Created = fileinfo.ModTime()
 		messages = append(messages, m)
+		if len(messages) >= limit {
+			break
+		}
 	}
 
 	logrus.Printf("Found %d messages", len(messages))

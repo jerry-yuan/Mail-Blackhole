@@ -9,6 +9,8 @@ github.com/gorilla/mux v1.3.1-0.20170228224354-599cba5e7b61 h1:fgQcA2gW8X1dLTYea
 github.com/gorilla/mux v1.3.1-0.20170228224354-599cba5e7b61/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c h1:/dq3+XpxRH+cjiua5GyJKE80RXZfZbmT8ejIcNsb93Q=
 github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c/go.mod h1:YeAe0gNeiNT5hoiZRI4yiOky6jVdNvfO2N6Kav/HmxY=
+github.com/gorilla/pat v1.0.1 h1:OeSoj6sffw4/majibAY2BAUsXjNP7fEE+w30KickaL4=
+github.com/gorilla/pat v1.0.1/go.mod h1:YeAe0gNeiNT5hoiZRI4yiOky6jVdNvfO2N6Kav/HmxY=
 github.com/gorilla/websocket v1.1.1-0.20170319172727-a91eba7f9777 h1:2Wp9JIvcGxCnl0ju03V2uMMLBwP/NXsgc/U8qwb/rp8=
 github.com/gorilla/websocket v1.1.1-0.20170319172727-a91eba7f9777/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/ian-kent/envconf v0.0.0-20141026121121-c19809918c02 h1:dU8zq210pt1b71X8xh9GOxC7uBHNtQ9BYC+Lb6SA/mA=
@@ -24,10 +26,6 @@ github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfn
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/jerry-yuan/mail-blackhole/data v1.0.2-rc1 h1:OIx3Ef/0NSzM+NGLQLqSBJ4FzhvmFhCbImDFxn4rrGA=
-github.com/jerry-yuan/mail-blackhole/data v1.0.2-rc1/go.mod h1:tjR/iXRhbSUKHzAAMd99RygVaDB5rIDC/bmWc363MzU=
-github.com/mailhog/smtp v1.0.2-rc1 h1:6D87EWxmZOj0J/QtpaoRAYhzucAsjj6GdZ+rStJcwuw=
-github.com/mailhog/smtp v1.0.2-rc1/go.mod h1:GMrAdv1hXro38xj5dsWPAk5ZiXJHFx9t7W9Yqsk0XUM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=

@@ -18,8 +18,11 @@ import (
 var APIHost string
 var WebPath string
 
-//go:embed assets
-var assets embed.FS
+//go:embed frontendv1
+var frontendv1 embed.FS
+
+////go:embed frontendv2/dist
+//var frontendv2 embed.FS
 
 type Web struct {
 	config *config.WebUIConfig
@@ -30,7 +33,7 @@ func CreateWeb(cfg *config.WebUIConfig, r http.Handler) *Web {
 	web := &Web{
 		config: cfg,
 		asset: func(s string) ([]byte, error) {
-			file, err := assets.Open(s)
+			file, err := frontendv1.Open(s)
 			if err != nil {
 				return nil, err
 			}
@@ -44,10 +47,10 @@ func CreateWeb(cfg *config.WebUIConfig, r http.Handler) *Web {
 
 	logrus.Infof("Serving under http://%s%s/", cfg.BindAddr, WebPath)
 
-	pat.Path(WebPath + "/images/{file:.*}").Methods("GET").HandlerFunc(web.Static("assets/images/{{file}}"))
-	pat.Path(WebPath + "/css/{file:.*}").Methods("GET").HandlerFunc(web.Static("assets/css/{{file}}"))
-	pat.Path(WebPath + "/js/{file:.*}").Methods("GET").HandlerFunc(web.Static("assets/js/{{file}}"))
-	pat.Path(WebPath + "/fonts/{file:.*}").Methods("GET").HandlerFunc(web.Static("assets/fonts/{{file}}"))
+	pat.Path(WebPath + "/images/{file:.*}").Methods("GET").HandlerFunc(web.Static("frontendv1/images/{{file}}"))
+	pat.Path(WebPath + "/css/{file:.*}").Methods("GET").HandlerFunc(web.Static("frontendv1/css/{{file}}"))
+	pat.Path(WebPath + "/js/{file:.*}").Methods("GET").HandlerFunc(web.Static("frontendv1/js/{{file}}"))
+	pat.Path(WebPath + "/fonts/{file:.*}").Methods("GET").HandlerFunc(web.Static("frontendv1/fonts/{{file}}"))
 	pat.StrictSlash(true).Path(WebPath + "/").Methods("GET").HandlerFunc(web.Index())
 
 	return web
@@ -73,7 +76,7 @@ func (web Web) Index() func(http.ResponseWriter, *http.Request) {
 	tmpl := template.New("index.html")
 	tmpl.Delims("[:", ":]")
 
-	asset, err := web.asset("assets/templates/index.html")
+	asset, err := web.asset("frontendv1/templates/index.html")
 	if err != nil {
 		logrus.Fatalf("[UI] Error loading index.html: %s", err)
 	}
@@ -86,7 +89,7 @@ func (web Web) Index() func(http.ResponseWriter, *http.Request) {
 	layout := template.New("layout.html")
 	layout.Delims("[:", ":]")
 
-	asset, err = web.asset("assets/templates/layout.html")
+	asset, err = web.asset("frontendv1/templates/layout.html")
 	if err != nil {
 		logrus.Fatalf("[UI] Error loading layout.html: %s", err)
 	}
