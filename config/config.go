@@ -32,6 +32,7 @@ type APIConfig struct {
 }
 
 type WebUIConfig struct {
+	Version  string
 	BindAddr string
 	WebPath  string
 	APIHost  string
@@ -77,6 +78,7 @@ func init() {
 	flag.StringVar(&globalConfig.API.CORSOrigin, "api-cors-origin", envconf.FromEnvP("MBH_API_CORS_ORIGIN", "").(string), "CORS Access-Control-Allow-Origin header for API endpoints")
 
 	// Web UI configuration
+	flag.StringVar(&globalConfig.WebUI.Version, "ui-version", envconf.FromEnvP("MBH_WEBUI_VERSION", "v2").(string), "Frontend version, default use v2")
 	flag.StringVar(&globalConfig.WebUI.BindAddr, "ui-bind-addr", envconf.FromEnvP("MBH_WEBUI_BIND_ADDR", "0.0.0.0:8025").(string), "HTTP bind interface and port for UI, e.g. 0.0.0.0:8025 or just :8025")
 	flag.StringVar(&globalConfig.WebUI.AuthFile, "ui-auth-file", envconf.FromEnvP("MBH_WEBUI_AUTH_FILE", "").(string), "A username:bcryptpw mapping file")
 	flag.StringVar(&globalConfig.WebUI.WebPath, "ui-web-path", envconf.FromEnvP("MBH_UI_WEB_PATH", "").(string), "WebPath under which the UI is served (without leading or trailing slashes), e.g. 'mailhog'. Value defaults to ''")

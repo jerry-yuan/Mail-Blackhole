@@ -21,9 +21,6 @@ var WebPath string
 //go:embed frontendv1
 var frontendv1 embed.FS
 
-////go:embed frontendv2/dist
-//var frontendv2 embed.FS
-
 type Web struct {
 	config *config.WebUIConfig
 	asset  func(string) ([]byte, error)

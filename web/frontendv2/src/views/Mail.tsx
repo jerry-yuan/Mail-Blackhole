@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Container, Icon, Button, Segment, Dimmer, Loader } from "semantic-ui-react";
 import { getMessage } from "../api/v1/messages";
-import ErrorPage from "./ErrorPage";
+import ErrorPage from "./NotFoundPage";
 import { Message } from "../api/domain";
 import MessageViewer from "../components/message/MessageViewer";
 

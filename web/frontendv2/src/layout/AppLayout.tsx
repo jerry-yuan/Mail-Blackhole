@@ -1,13 +1,21 @@
 import AppHeader from "./AppHeader";
-import AppContent from "./AppContent";
 import { AppFooter } from "./AppFooter";
+import { ErrorBoundary } from "./ErrorBoundary";
 
-export default function AppLayout() {
+interface Props {
+    children: React.ReactNode[] | React.ReactNode;
+}
+
+const AppLayout: React.FC<Props> = function ({ children }) {
     return (
         <div className="app-layout">
             <AppHeader />
-            <AppContent />
+            <div className="app-content">
+                <ErrorBoundary>{children}</ErrorBoundary>
+            </div>
             <AppFooter />
         </div>
     );
-}
+};
+
+export default AppLayout;

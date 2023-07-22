@@ -59,8 +59,12 @@ func main() {
 
 	if conf.WebUI.BindAddr == conf.API.BindAddr {
 		cb := func(r gohttp.Handler) {
-			web.CreateWeb(&conf.WebUI, r.(*pat.Router))
 			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
+			if conf.WebUI.Version == "v2" {
+				web.CreateWebV2(&conf.WebUI, r.(*pat.Router))
+			} else {
+				web.CreateWeb(&conf.WebUI, r.(*pat.Router))
+			}
 		}
 		go http.Listen(conf.API.BindAddr, exitCh, cb)
 	} else {
@@ -68,7 +72,11 @@ func main() {
 			api.CreateAPI(&conf.API, msgStorage, messageChan, r.(*pat.Router))
 		}
 		cb2 := func(r gohttp.Handler) {
-			web.CreateWeb(&conf.WebUI, r.(*pat.Router))
+			if conf.WebUI.Version == "v2" {
+				web.CreateWebV2(&conf.WebUI, r.(*pat.Router))
+			} else {
+				web.CreateWeb(&conf.WebUI, r.(*pat.Router))
+			}
 		}
 		go http.Listen(conf.API.BindAddr, exitCh, cb1)
 		go http.Listen(conf.WebUI.BindAddr, exitCh, cb2)

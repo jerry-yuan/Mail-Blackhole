@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Container, Divider, Dropdown, Header, Icon, List, Pagination, Placeholder, Popup, Segment } from "semantic-ui-react";
+import { Button, Confirm, Container, Divider, Dropdown, Header, Icon, List, Pagination, Placeholder, Popup, Segment } from "semantic-ui-react";
 
+import { deleteMessages } from "../api/v1/messages";
 import { getMessages } from "../api/v2/message";
 import { Message } from "../api/domain";
 import { Link } from "react-router-dom";
@@ -8,7 +9,7 @@ import moment from "moment";
 import prettyBytes from "pretty-bytes";
 import Rfc2047Text from "../components/Rfc2047Text";
 const availablePageSizes = [
-    { text: "7", value: 8 },
+    { text: "8", value: 8 },
     { text: "10", value: 10 },
     { text: "20", value: 20 },
     { text: "50", value: 50 },
@@ -21,6 +22,7 @@ export default function InboxPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [pagination, setPagination] = useState({ totalPages: 0, activePage: 1, pageSize: 8 });
     const [loading, setLoading] = useState(true);
+    const [deleteAllConfirmShow, setDeleteAllConfirmShow] = useState(false);
 
     const refresh = async function () {
         const start = (pagination.activePage - 1) * pagination.pageSize;
@@ -32,17 +34,30 @@ export default function InboxPage() {
         setLoading(false);
     };
 
+    const trash = async function () {
+        await deleteMessages();
+        await refresh();
+    };
+
     useEffect(() => {
         refresh();
     }, [pagination.activePage, pagination.pageSize]);
     return (
         <Container style={{ marginTop: "1em", marginBottom: "1em" }}>
-            <Header as="h2">Inbox {JSON.stringify(pagination)}</Header>
+            <Header as="h2">Inbox</Header>
             <Divider inverted />
             <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
                     <Button icon="refresh" color="green" onClick={refresh}></Button>
-                    <Button icon="trash" color="red"></Button>
+                    <Button icon="trash" color="red" onClick={() => setDeleteAllConfirmShow(true)}></Button>
+                    <Confirm
+                        open={deleteAllConfirmShow}
+                        onConfirm={() => {
+                            trash();
+                            setDeleteAllConfirmShow(false);
+                        }}
+                        onCancel={() => setDeleteAllConfirmShow(false)}
+                    ></Confirm>
                 </div>
                 <div>
                     <Dropdown
@@ -57,8 +72,8 @@ export default function InboxPage() {
             <Segment>
                 {loading ? (
                     <Placeholder fluid>
-                        {Array.from({ length: pagination.pageSize }, (t) => (
-                            <Placeholder.Paragraph>
+                        {Array.from({ length: pagination.pageSize }, (t, index) => (
+                            <Placeholder.Paragraph key={index}>
                                 <Placeholder.Line />
                                 <Placeholder.Line />
                             </Placeholder.Paragraph>
@@ -66,37 +81,45 @@ export default function InboxPage() {
                     </Placeholder>
                 ) : (
                     <List divided relaxed>
-                        {messages.map((message) => (
-                            <List.Item key={message.ID}>
-                                <List.Icon name="mail" size="large" verticalAlign="middle" />
-                                <List.Content>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <div style={{ display: "flex", justifyContent: "left" }}>
-                                            <List.Header as={Link} to={"/mail/" + message.ID}>
-                                                <Rfc2047Text>{message.Content.Headers["Subject"]}</Rfc2047Text>
-                                            </List.Header>
-                                            <List.Description></List.Description>
-                                        </div>
-                                        <List.Description>{moment(message.Created).format("yyyy-MM-DD HH:mm:ss")}</List.Description>
-                                    </div>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <div>
-                                            <Popup position="bottom center" trigger={<Icon className="purple" name="user circle" />}>
-                                                <Rfc2047Text>
-                                                    From: {message.From.Mailbox}@{message.From.Domain}
-                                                </Rfc2047Text>
-                                            </Popup>
-                                            {message.To.map((receiver, index) => (
-                                                <Popup key={index} position="bottom center" trigger={<Icon className="blue" name="user circle" />}>
-                                                    To:{receiver.Mailbox}@{receiver.Domain}
-                                                </Popup>
-                                            ))}
-                                        </div>
-                                        <div style={{ display: "flex", justifyContent: "right" }}>{prettyBytes(message.Raw?.Data.length || 0)}</div>
-                                    </div>
-                                </List.Content>
-                            </List.Item>
-                        ))}
+                        {messages.length > 0
+                            ? messages.map((message) => (
+                                  <List.Item key={message.ID}>
+                                      <List.Icon name="mail" size="large" verticalAlign="middle" />
+                                      <List.Content>
+                                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                              <div style={{ display: "flex", justifyContent: "left" }}>
+                                                  <List.Header as={Link} to={"/mail/" + message.ID}>
+                                                      <Rfc2047Text>{message.Content.Headers["Subject"]}</Rfc2047Text>
+                                                  </List.Header>
+                                                  <List.Description></List.Description>
+                                              </div>
+                                              <List.Description>{moment(message.Created).format("yyyy-MM-DD HH:mm:ss")}</List.Description>
+                                          </div>
+                                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                              <div>
+                                                  <Popup position="bottom center" trigger={<Icon className="purple" name="user circle" />}>
+                                                      <Rfc2047Text>
+                                                          From: {message.From.Mailbox}@{message.From.Domain}
+                                                      </Rfc2047Text>
+                                                  </Popup>
+                                                  {message.To.map((receiver, index) => (
+                                                      <Popup
+                                                          key={index}
+                                                          position="bottom center"
+                                                          trigger={<Icon className="blue" name="user circle" />}
+                                                      >
+                                                          To:{receiver.Mailbox}@{receiver.Domain}
+                                                      </Popup>
+                                                  ))}
+                                              </div>
+                                              <div style={{ display: "flex", justifyContent: "right" }}>
+                                                  {prettyBytes(message.Raw?.Data.length || 0)}
+                                              </div>
+                                          </div>
+                                      </List.Content>
+                                  </List.Item>
+                              ))
+                            : "No Messages"}
                     </List>
                 )}
             </Segment>
@@ -104,7 +127,10 @@ export default function InboxPage() {
                 <Pagination
                     totalPages={pagination.totalPages}
                     activePage={pagination.activePage}
-                    onPageChange={(e, { activePage }) => setPagination({ ...pagination, activePage: activePage as number })}
+                    onPageChange={(e, { activePage }) => {
+                        console.log("1234");
+                        setPagination({ ...pagination, activePage: activePage as number });
+                    }}
                 />
             </div>
         </Container>

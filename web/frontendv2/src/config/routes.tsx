@@ -1,13 +1,21 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Outlet, createBrowserRouter } from "react-router-dom";
 import InboxPage from "../views/Inbox";
 import AppLayout from "../layout/AppLayout";
-import ErrorPage from "../views/ErrorPage";
+import NotFoundPage from "../views/NotFoundPage";
 import MailPage from "../views/Mail";
 export default createBrowserRouter([
     {
         path: "/",
-        element: <AppLayout />,
-        errorElement: <AppLayout />,
+        element: (
+            <AppLayout>
+                <Outlet />
+            </AppLayout>
+        ),
+        errorElement: (
+            <AppLayout>
+                <Outlet />
+            </AppLayout>
+        ),
 
         children: [
             {
@@ -20,7 +28,7 @@ export default createBrowserRouter([
             },
             {
                 path: "*",
-                element: <ErrorPage />,
+                element: <NotFoundPage />,
             },
         ],
     },

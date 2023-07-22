@@ -35,7 +35,7 @@ const hasHtmlParts = (mimeParts: Content[]): boolean => {
 const findFirstPart = (mimeParts: Content[], mimeType: string): Content | null => {
     for (let i = 0; i < mimeParts.length; i++) {
         const mimePart = mimeParts[i];
-        if (mimePart.Headers["Content-Type"].join().startsWith(mimeType)) {
+        if (mimePart.Headers["Content-Type"] ?? [].join().startsWith(mimeType)) {
             return mimePart;
         }
         if (mimePart.MIME) {
